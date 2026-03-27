@@ -3,3 +3,4 @@ export { productService } from "./product.service";
 export { cartService } from "./cart.service";
 export { orderService } from "./order.service";
 export { userService } from "./user.service";
+export { collectionService } from "./collection.service";

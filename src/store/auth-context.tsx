@@ -21,6 +21,7 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   isLoading: boolean;
   login: (payload: { email: string; password: string }) => Promise<void>;
   signup: (payload: { email: string; password: string; name?: string }) => Promise<void>;
@@ -43,8 +44,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (savedToken && savedUser) {
       setToken(savedToken);
       setUser(safeJsonParse<User | null>(savedUser, null));
-      // Re-sync cookie in case it was cleared (e.g. browser restart)
+      // Re-sync cookies in case they were cleared (e.g. browser restart)
       setCookie(STORAGE_KEYS.TOKEN, savedToken);
+      const parsedUser = safeJsonParse<User | null>(savedUser, null);
+      if (parsedUser?.role) setCookie("user_role", parsedUser.role);
     }
     setIsLoading(false);
   }, []);
@@ -59,7 +62,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Persist token in BOTH localStorage (client reads) and cookie (middleware reads)
         localStorage.setItem(STORAGE_KEYS.TOKEN, newToken);
         localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(newUser));
-        setCookie(STORAGE_KEYS.TOKEN, newToken); // <-- lets middleware see it
+        setCookie(STORAGE_KEYS.TOKEN, newToken);          // middleware reads token
+        setCookie("user_role", newUser.role ?? "user");   // middleware reads role
 
         setToken(newToken);
         setUser(newUser);
@@ -96,7 +100,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     localStorage.removeItem(STORAGE_KEYS.TOKEN);
     localStorage.removeItem(STORAGE_KEYS.USER);
-    removeCookie(STORAGE_KEYS.TOKEN); // <-- clears cookie so middleware blocks again
+    removeCookie(STORAGE_KEYS.TOKEN);
+    removeCookie("user_role");
     setToken(null);
     setUser(null);
     showToast(MESSAGES.AUTH.LOGOUT_SUCCESS, "info");
@@ -109,6 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         token,
         isAuthenticated: !!token,
+        isAdmin: user?.role === "admin",
         isLoading,
         login,
         signup,

@@ -22,14 +22,53 @@ export interface AuthResponse {
   user: User;
 }
 
+// ──── User Role ────
+export type UserRole = "admin" | "user";
+
 // ──── User Types ────
 export interface User {
   id: number;
   name: string;
   email: string;
+  role: UserRole;
   isVerified: boolean;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
+}
+
+// ──── Collection Types ────
+export interface Collection {
+  id: number;
+  name: string;
+}
+
+// ──── Admin Product Types (matches backend Product entity) ────
+export type ProductStatus = "ACTIVE" | "INACTIVE" | "DRAFT";
+
+export interface AdminProduct {
+  id: number;
+  name: string;
+  sku: string;
+  image_url: string[];
+  list_price: number;
+  offer_price: number;
+  status: ProductStatus;
+  stock: number;
+  created_at: string;
+}
+
+export interface CreateProductPayload {
+  name: string;
+  sku: string;
+  list_price: number;
+  offer_price: number;
+  stock: number;
+  status: ProductStatus;
+  image_url?: string[];
+}
+
+export interface UpdateProductPayload extends Partial<CreateProductPayload> {
+  id: number;
 }
 
 // ──── Product Types ────

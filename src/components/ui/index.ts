@@ -5,3 +5,4 @@ export { ToastContainer } from "./Toast";
 export { Modal } from "./Modal";
 export { Badge } from "./Badge";
 export { EmptyState } from "./EmptyState";
+export { Logo, LogoIcon } from "./Logo";

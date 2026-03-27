@@ -33,6 +33,23 @@ export const API_ENDPOINTS = {
     UPDATE: "/user/profile",
     ADDRESSES: "/user/addresses",
   },
+  // ──── Admin ────
+  ADMIN: {
+    COLLECTION: {
+      LIST:             "/collection/findAll",
+      DETAIL:           (id: number | string) => `/collection/findOne/${id}`,
+      CREATE:           "/collection/create",
+      UPDATE:           "/collection/update",
+      DELETE:           (id: number | string) => `/collection/remove/${id}`,
+    },
+    PRODUCT: {
+      LIST:             "/admin/products",
+      DETAIL:           (id: number | string) => `/admin/products/${id}`,
+      CREATE:           "/admin/products/create",
+      UPDATE:           (id: number | string) => `/admin/products/${id}`,
+      DELETE:           (id: number | string) => `/admin/products/${id}`,
+    },
+  },
 } as const;
 
 // ──── App Routes ────
@@ -46,6 +63,12 @@ export const ROUTES = {
   CART: "/cart",
   ORDERS: "/orders",
   PROFILE: "/profile",
+  // ──── Admin ────
+  ADMIN: {
+    ROOT:        "/admin",
+    PRODUCTS:    "/admin/products",
+    COLLECTIONS: "/admin/collections",
+  },
 } as const;
 
 // ──── Toast Messages ────

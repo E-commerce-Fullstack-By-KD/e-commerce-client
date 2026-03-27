@@ -1,7 +1,7 @@
 /**
  * Client-side cookie helpers.
- * These are used to keep the auth token in a cookie so that
- * Next.js middleware (server/Edge) can read it for route protection.
+ * The auth token is stored in a cookie so Next.js middleware (server/Edge)
+ * can read it for route protection — middleware has no access to localStorage.
  */
 
 const ONE_DAY_IN_SECONDS = 60 * 60 * 24;

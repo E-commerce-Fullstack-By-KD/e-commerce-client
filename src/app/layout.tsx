@@ -9,6 +9,13 @@ export const metadata: Metadata = {
     template: `%s | ${config.appName}`,
   },
   description: "Your one-stop shop for quality products at great prices.",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

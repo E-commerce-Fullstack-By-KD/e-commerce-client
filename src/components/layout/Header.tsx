@@ -1,13 +1,15 @@
 "use client";
 
+"use client";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/store/auth-context";
 import { ROUTES } from "@/lib/constants";
-import { config } from "@/config";
 import { cn, getInitials } from "@/lib/utils";
 import { Button } from "@/components/ui";
+import { Logo } from "@/components/ui/Logo";
 
 const navLinks = [
   { label: "Home", href: ROUTES.HOME },
@@ -16,7 +18,7 @@ const navLinks = [
 ];
 
 export function Header() {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -24,12 +26,7 @@ export function Header() {
     <header className="sticky top-0 z-40 border-b border-border bg-surface/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
-        <Link href={ROUTES.HOME} className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-600">
-            <span className="text-sm font-bold text-white">S</span>
-          </div>
-          <span className="text-lg font-bold text-text-primary">{config.appName}</span>
-        </Link>
+        <Logo size={36} />
 
         {/* Desktop Nav */}
         <nav className="hidden items-center gap-1 md:flex">
@@ -53,6 +50,33 @@ export function Header() {
         <div className="flex items-center gap-3">
           {isAuthenticated ? (
             <>
+              {/* ── Admin Panel Button (admin-only) ── */}
+              {isAdmin && (
+                <Link
+                  href={ROUTES.ADMIN.ROOT}
+                  className={cn(
+                    "group relative hidden items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all duration-200 sm:flex",
+                    pathname.startsWith("/admin")
+                      ? "border-orange-400 bg-orange-50 text-orange-700"
+                      : "border-orange-200 bg-gradient-to-r from-orange-50 to-amber-50 text-orange-600 hover:border-orange-400 hover:from-orange-100 hover:to-amber-100"
+                  )}
+                >
+                  {/* Animated ping dot */}
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-60" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-orange-500" />
+                  </span>
+                  {/* Shield icon */}
+                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5}
+                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                    />
+                  </svg>
+                  Admin
+                </Link>
+              )}
+
+              {/* Cart */}
               <Link
                 href={ROUTES.CART}
                 className="relative rounded-lg p-2 text-text-secondary hover:bg-surface-tertiary hover:text-text-primary"
@@ -61,12 +85,21 @@ export function Header() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
               </Link>
+
+              {/* Avatar */}
               <Link
                 href={ROUTES.PROFILE}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-xs font-semibold text-primary-700"
+                className={cn(
+                  "flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ring-2 ring-offset-1",
+                  isAdmin
+                    ? "bg-gradient-to-br from-orange-400 to-amber-500 text-white ring-orange-300"
+                    : "bg-primary-100 text-primary-700 ring-primary-200"
+                )}
+                title={isAdmin ? `${user?.name} (Admin)` : user?.name}
               >
                 {user ? getInitials(user.name) : "U"}
               </Link>
+
               <Button variant="ghost" size="sm" onClick={logout}>
                 Logout
               </Button>
