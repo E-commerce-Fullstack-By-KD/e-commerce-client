@@ -36,18 +36,18 @@ export const API_ENDPOINTS = {
   // ──── Admin ────
   ADMIN: {
     COLLECTION: {
-      LIST:             "/collection/findAll",
-      DETAIL:           (id: number | string) => `/collection/findOne/${id}`,
-      CREATE:           "/collection/create",
-      UPDATE:           "/collection/update",
-      DELETE:           (id: number | string) => `/collection/remove/${id}`,
+      LIST: "/collection/findAll",
+      DETAIL: (id: number | string) => `/collection/findOne/${id}`,
+      CREATE: "/collection/create",
+      UPDATE: "/collection/update",
+      DELETE: (id: number | string) => `/collection/remove/${id}`,
     },
     PRODUCT: {
-      LIST:             "/admin/products",
-      DETAIL:           (id: number | string) => `/admin/products/${id}`,
-      CREATE:           "/admin/products/create",
-      UPDATE:           (id: number | string) => `/admin/products/${id}`,
-      DELETE:           (id: number | string) => `/admin/products/${id}`,
+      LIST: "/admin/products",
+      DETAIL: (id: number | string) => `/admin/products/${id}`,
+      CREATE: "/admin/products/create",
+      UPDATE: (id: number | string) => `/admin/products/${id}`,
+      DELETE: (id: number | string) => `/admin/products/${id}`,
     },
   },
 } as const;
@@ -65,8 +65,8 @@ export const ROUTES = {
   PROFILE: "/profile",
   // ──── Admin ────
   ADMIN: {
-    ROOT:        "/admin",
-    PRODUCTS:    "/admin/products",
+    ROOT: "/admin",
+    PRODUCTS: "/admin/products",
     COLLECTIONS: "/admin/collections",
   },
 } as const;

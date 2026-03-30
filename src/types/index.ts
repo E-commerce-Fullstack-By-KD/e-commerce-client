@@ -1,5 +1,4 @@
 // ──── API Response Types ────
-// Backend uses `result` for data payloads (not `data`)
 export interface ApiResponse<T = unknown> {
   status_code: number;
   error: boolean;
@@ -18,14 +17,13 @@ export interface SignupPayload extends LoginPayload {
 }
 
 export interface AuthResponse {
-  jwtToken: string;   // backend returns `jwtToken`
+  jwtToken: string;
   user: User;
 }
 
-// ──── User Role ────
+// ──── User ────
 export type UserRole = "admin" | "user";
 
-// ──── User Types ────
 export interface User {
   id: number;
   name: string;
@@ -36,55 +34,64 @@ export interface User {
   updatedAt?: string;
 }
 
-// ──── Collection Types ────
+// ──── Collection ────
 export interface Collection {
   id: number;
   name: string;
 }
 
-// ──── Admin Product Types (matches backend Product entity) ────
+// ──── Product Status ────
 export type ProductStatus = "ACTIVE" | "INACTIVE" | "DRAFT";
 
+// ──── Admin Product (matches backend Product entity exactly) ────
 export interface AdminProduct {
   id: number;
   name: string;
   sku: string;
+  description: string | null;
   image_url: string[];
   list_price: number;
   offer_price: number;
   status: ProductStatus;
   stock: number;
+  is_deleted: boolean;
+  collections: Collection[];
   created_at: string;
+  updated_at: string;
 }
 
+// ──── Product Create/Update Payloads (mirrors backend DTO) ────
 export interface CreateProductPayload {
   name: string;
   sku: string;
+  description?: string;
+  image_url?: string[];
   list_price: number;
   offer_price: number;
   stock: number;
-  status: ProductStatus;
-  image_url?: string[];
+  status?: ProductStatus;
+  collectionIds?: number[];
 }
 
 export interface UpdateProductPayload extends Partial<CreateProductPayload> {
   id: number;
 }
 
-// ──── Product Types ────
+// ──── Public Product (storefront) ────
 export interface Product {
   id: number;
   name: string;
   description: string;
-  price: number;
-  image: string;
-  category: string;
+  list_price: number;
+  offer_price: number;
+  image_url: string[];
+  status: ProductStatus;
   stock: number;
-  createdAt: string;
-  updatedAt: string;
+  collections: Collection[];
+  created_at: string;
 }
 
-// ──── Cart Types ────
+// ──── Cart ────
 export interface CartItem {
   id: number;
   product: Product;
@@ -97,7 +104,14 @@ export interface Cart {
   total: number;
 }
 
-// ──── Order Types ────
+// ──── Order ────
+export type OrderStatus =
+  | "pending"
+  | "processing"
+  | "shipped"
+  | "delivered"
+  | "cancelled";
+
 export interface Order {
   id: number;
   items: OrderItem[];
@@ -114,9 +128,7 @@ export interface OrderItem {
   price: number;
 }
 
-export type OrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";
-
-// ──── Address Types ────
+// ──── Address ────
 export interface Address {
   id: number;
   street: string;
@@ -127,7 +139,7 @@ export interface Address {
   isDefault: boolean;
 }
 
-// ──── Common Types ────
+// ──── Pagination ────
 export interface PaginatedResponse<T> {
   data: T[];
   total: number;

@@ -38,7 +38,7 @@ export function Header() {
                 "rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 pathname === link.href
                   ? "bg-primary-50 text-primary-700"
-                  : "text-text-secondary hover:bg-surface-tertiary hover:text-text-primary"
+                  : "text-text-secondary hover:bg-surface-tertiary hover:text-text-primary",
               )}
             >
               {link.label}
@@ -58,7 +58,7 @@ export function Header() {
                     "group relative hidden items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all duration-200 sm:flex",
                     pathname.startsWith("/admin")
                       ? "border-orange-400 bg-orange-50 text-orange-700"
-                      : "border-orange-200 bg-gradient-to-r from-orange-50 to-amber-50 text-orange-600 hover:border-orange-400 hover:from-orange-100 hover:to-amber-100"
+                      : "border-orange-200 bg-linear-to-br from-orange-50 to-amber-50 text-orange-600 hover:border-orange-400 hover:from-orange-100 hover:to-amber-100",
                   )}
                 >
                   {/* Animated ping dot */}
@@ -67,8 +67,16 @@ export function Header() {
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-orange-500" />
                   </span>
                   {/* Shield icon */}
-                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5}
+                  <svg
+                    className="h-3.5 w-3.5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2.5}
                       d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
                     />
                   </svg>
@@ -81,8 +89,18 @@ export function Header() {
                 href={ROUTES.CART}
                 className="relative rounded-lg p-2 text-text-secondary hover:bg-surface-tertiary hover:text-text-primary"
               >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                  />
                 </svg>
               </Link>
 
@@ -92,8 +110,8 @@ export function Header() {
                 className={cn(
                   "flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ring-2 ring-offset-1",
                   isAdmin
-                    ? "bg-gradient-to-br from-orange-400 to-amber-500 text-white ring-orange-300"
-                    : "bg-primary-100 text-primary-700 ring-primary-200"
+                    ? "bg-linear-to-br from-orange-400 to-amber-500 text-white ring-orange-300"
+                    : "bg-primary-100 text-primary-700 ring-primary-200",
                 )}
                 title={isAdmin ? `${user?.name} (Admin)` : user?.name}
               >
@@ -107,7 +125,9 @@ export function Header() {
           ) : (
             <div className="flex items-center gap-2">
               <Link href={ROUTES.LOGIN}>
-                <Button variant="ghost" size="sm">Log in</Button>
+                <Button variant="ghost" size="sm">
+                  Log in
+                </Button>
               </Link>
               <Link href={ROUTES.SIGNUP}>
                 <Button size="sm">Sign up</Button>
@@ -120,11 +140,26 @@ export function Header() {
             className="rounded-lg p-2 text-text-secondary hover:bg-surface-tertiary md:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
               {mobileMenuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               )}
             </svg>
           </button>
@@ -143,7 +178,7 @@ export function Header() {
                 "block rounded-lg px-3 py-2 text-sm font-medium",
                 pathname === link.href
                   ? "bg-primary-50 text-primary-700"
-                  : "text-text-secondary hover:bg-surface-tertiary"
+                  : "text-text-secondary hover:bg-surface-tertiary",
               )}
             >
               {link.label}
