@@ -43,11 +43,11 @@ export const API_ENDPOINTS = {
       DELETE: (id: number | string) => `/collection/remove/${id}`,
     },
     PRODUCT: {
-      LIST: "/admin/products",
-      DETAIL: (id: number | string) => `/admin/products/${id}`,
-      CREATE: "/admin/products/create",
-      UPDATE: (id: number | string) => `/admin/products/${id}`,
-      DELETE: (id: number | string) => `/admin/products/${id}`,
+      LIST: "/product",
+      DETAIL: (id: number | string) => `/product/${id}`,
+      CREATE: "/product",
+      UPDATE: (id: number | string) => `/product/${id}`,
+      DELETE: (id: number | string) => `/product/${id}`,
     },
   },
 } as const;
