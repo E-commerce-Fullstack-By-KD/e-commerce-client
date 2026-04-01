@@ -1,21 +1,31 @@
-import { get, post, put, del } from "@/lib/api";
+import { get, post, del, put } from "@/lib/api";
 import { API_ENDPOINTS } from "@/lib/constants";
-import type { ApiResponse, Cart } from "@/types";
+import type { ApiResponse, CartListResult, CartSingleResult } from "@/types";
 
 export const cartService = {
-  get() {
-    return get<ApiResponse<Cart>>(API_ENDPOINTS.CART.GET);
+  /** GET /cart — all cart rows for the logged-in user */
+  getAll() {
+    return get<ApiResponse<CartListResult>>(API_ENDPOINTS.CART.LIST);
   },
 
-  addItem(productId: number, quantity: number) {
-    return post<ApiResponse<Cart>>(API_ENDPOINTS.CART.ADD, { productId, quantity });
+  /** POST /cart — add product (merges quantity if product already in cart) */
+  addItem(productId: number, quantity = 1) {
+    return post<ApiResponse<CartSingleResult>>(API_ENDPOINTS.CART.ADD, {
+      productId,
+      quantity,
+    });
   },
 
-  updateItem(productId: number, quantity: number) {
-    return put<ApiResponse<Cart>>(API_ENDPOINTS.CART.UPDATE, { productId, quantity });
+  /** PATCH /cart/:cartId — set new quantity for a cart row */
+  updateItem(cartId: number, quantity: number) {
+    return put<ApiResponse<CartSingleResult>>(
+      API_ENDPOINTS.CART.UPDATE(cartId),
+      { quantity },
+    );
   },
 
-  removeItem(id: number | string) {
-    return del<ApiResponse>(API_ENDPOINTS.CART.REMOVE(id));
+  /** DELETE /cart/:cartId — remove a cart row */
+  removeItem(cartId: number) {
+    return del<ApiResponse>(API_ENDPOINTS.CART.REMOVE(cartId));
   },
 };

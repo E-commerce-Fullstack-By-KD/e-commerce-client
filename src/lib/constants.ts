@@ -18,9 +18,9 @@ export const API_ENDPOINTS = {
     DETAIL: (id: number | string) => `/products/${id}`,
   },
   CART: {
-    GET: "/cart",
-    ADD: "/cart/add",
-    UPDATE: "/cart/update",
+    LIST:   "/cart",
+    ADD:    "/cart",
+    UPDATE: (id: number | string) => `/cart/${id}`,
     REMOVE: (id: number | string) => `/cart/${id}`,
   },
   ORDERS: {

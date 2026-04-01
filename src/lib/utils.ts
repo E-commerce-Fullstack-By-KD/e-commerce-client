@@ -3,7 +3,9 @@ import { type QueryParams } from "@/types";
 /**
  * Merge class names, filtering out falsy values.
  */
-export function cn(...classes: (string | boolean | undefined | null)[]): string {
+export function cn(
+  ...classes: (string | boolean | undefined | null)[]
+): string {
   return classes.filter(Boolean).join(" ");
 }
 
@@ -20,14 +22,19 @@ export function formatPrice(price: number, currency = "USD"): string {
 /**
  * Format date to readable string.
  */
-export function formatDate(date: string | Date, options?: Intl.DateTimeFormatOptions): string {
+export function formatDate(
+  date: string | Date,
+  options?: Intl.DateTimeFormatOptions,
+): string {
   const defaultOptions: Intl.DateTimeFormatOptions = {
     year: "numeric",
     month: "short",
     day: "numeric",
     ...options,
   };
-  return new Intl.DateTimeFormat("en-US", defaultOptions).format(new Date(date));
+  return new Intl.DateTimeFormat("en-US", defaultOptions).format(
+    new Date(date),
+  );
 }
 
 /**
@@ -87,6 +94,30 @@ export function safeJsonParse<T>(value: string, fallback: T): T {
   } catch {
     return fallback;
   }
+}
+
+/**
+ * Resolve the correct price fields for a product.
+ *
+ * Rules:
+ *  - If offer_price is set AND < list_price → discount scenario
+ *  - Otherwise → list_price is the single price, no strikethrough
+ */
+export function getProductPrice(listPrice: number, offerPrice?: number | null) {
+  const hasOffer =
+    offerPrice != null && offerPrice > 0 && offerPrice < listPrice;
+
+  return {
+    /** The price shown prominently */
+    displayPrice: hasOffer ? offerPrice! : listPrice,
+    /** The crossed-out original price — null when no discount */
+    originalPrice: hasOffer ? listPrice : null,
+    /** 0 when no discount */
+    discountPct: hasOffer
+      ? Math.round(((listPrice - offerPrice!) / listPrice) * 100)
+      : 0,
+    hasDiscount: hasOffer,
+  };
 }
 
 /**

@@ -51,7 +51,7 @@ export interface AdminProduct {
   description: string | null;
   image_url: string[];
   list_price: number;
-  offer_price: number;
+  offer_price: number | null;   // null = no offer, display list_price
   status: ProductStatus;
   stock: number;
   is_deleted: boolean;
@@ -67,7 +67,7 @@ export interface CreateProductPayload {
   description?: string;
   image_url?: string[];
   list_price: number;
-  offer_price: number;
+  offer_price?: number | null;  // optional — omit or null = no offer price
   stock: number;
   status?: ProductStatus;
   collectionIds?: number[];
@@ -92,16 +92,21 @@ export interface Product {
 }
 
 // ──── Cart ────
+/** One row in the cart table — matches backend Cart entity */
 export interface CartItem {
-  id: number;
-  product: Product;
+  id: number;          // cart row id (used for PATCH/DELETE)
   quantity: number;
+  product: AdminProduct;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface Cart {
-  id: number;
-  items: CartItem[];
-  total: number;
+export interface CartListResult {
+  carts: CartItem[];
+}
+
+export interface CartSingleResult {
+  cart: CartItem;
 }
 
 // ──── Order ────

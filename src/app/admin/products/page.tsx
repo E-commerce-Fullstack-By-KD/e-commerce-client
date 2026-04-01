@@ -5,7 +5,7 @@ import { adminProductService } from "@/services/admin-product.service";
 import { collectionService } from "@/services/collection.service";
 import { post } from "@/lib/api";
 import { useToast } from "@/store/toast-context";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, getProductPrice } from "@/lib/utils";
 import {
   AdminBtn,
   AdminInput,
@@ -37,7 +37,7 @@ const EMPTY_FORM: CreateProductPayload = {
   description: "",
   image_url: [],
   list_price: 0,
-  offer_price: 0,
+  offer_price: null,   // null = no offer price
   stock: 0,
   status: "DRAFT",
   collectionIds: [],
@@ -68,11 +68,17 @@ export default function AdminProductsPage() {
   ) => setForm((prev) => ({ ...prev, [key]: value }));
 
   const setNumericField =
-    (key: "list_price" | "offer_price" | "stock") =>
+    (key: "list_price" | "stock") =>
     (e: ChangeEvent<HTMLInputElement>) => {
       const raw = e.target.value;
       setField(key, raw === "" ? 0 : Number(raw));
     };
+
+  // offer_price: empty string → null (no offer), otherwise a number
+  const setOfferPrice = (e: ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    setField("offer_price", raw === "" ? null : Number(raw));
+  };
 
   /* fetch */
   const fetchProducts = useCallback(async () => {
@@ -116,7 +122,7 @@ export default function AdminProductsPage() {
       description: p.description ?? "",
       image_url: p.image_url ?? [],
       list_price: toNumber(p.list_price),
-      offer_price: toNumber(p.offer_price),
+      offer_price: p.offer_price != null ? toNumber(p.offer_price) : null,
       stock: toNumber(p.stock),
       status: p.status,
       collectionIds: p.collections?.map((c) => c.id) ?? [],
@@ -157,7 +163,11 @@ export default function AdminProductsPage() {
       const payload: CreateProductPayload = {
         ...form,
         list_price: toNumber(form.list_price),
-        offer_price: toNumber(form.offer_price),
+        // send null explicitly to clear offer_price, or the number if set & > 0
+        offer_price:
+          form.offer_price != null && form.offer_price > 0
+            ? toNumber(form.offer_price)
+            : null,
         stock: toNumber(form.stock),
         description: form.description?.trim() || undefined,
         image_url: allImageUrls.length ? allImageUrls : undefined,
@@ -274,22 +284,12 @@ export default function AdminProductsPage() {
       header: "Price",
       align: "right",
       render: (p) => {
-        const hasOfferPrice = p.offer_price && p.list_price !== p.offer_price;
+        const { displayPrice, originalPrice } = getProductPrice(p.list_price, p.offer_price);
         return (
           <div className="text-right">
-            {hasOfferPrice ? (
-              <>
-                <p className="font-semibold text-orange-400">
-                  {formatPrice(p.offer_price)}
-                </p>
-                <p className="text-xs text-slate-500 line-through">
-                  {formatPrice(p.list_price)}
-                </p>
-              </>
-            ) : (
-              <p className="font-semibold text-orange-400">
-                {formatPrice(p.list_price)}
-              </p>
+            <p className="font-semibold text-orange-400">{formatPrice(displayPrice)}</p>
+            {originalPrice && (
+              <p className="text-xs text-slate-500 line-through">{formatPrice(originalPrice)}</p>
             )}
           </div>
         );
@@ -443,11 +443,11 @@ export default function AdminProductsPage() {
               placeholder="0.00"
             />
             <AdminInput
-              label="Offer Price"
+              label="Offer Price (optional)"
               type="number"
-              value={String(form.offer_price)}
-              onChange={setNumericField("offer_price")}
-              placeholder="0.00"
+              value={form.offer_price != null ? String(form.offer_price) : ""}
+              onChange={setOfferPrice}
+              placeholder="Leave empty for no discount"
             />
             <AdminInput
               label="Stock"
