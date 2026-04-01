@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { STORAGE_KEYS } from "@/lib/constants";
 
 /** Paths that do NOT need auth */
-const PUBLIC_PATHS = ["/", "/login", "/signup", "/verify"];
+const PUBLIC_PATHS = ["/", "/login", "/signup", "/verify", "/products"];
 
 /** Paths that logged-in users should NOT see */
 const AUTH_ONLY_PATHS = ["/login", "/signup"];
