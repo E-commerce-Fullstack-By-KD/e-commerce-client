@@ -136,12 +136,37 @@ export interface OrderItem {
 // ──── Address ────
 export interface Address {
   id: number;
-  street: string;
+  full_name: string;
+  phone: string;
+  address_line_1: string;
+  address_line_2?: string | null;
   city: string;
   state: string;
-  zipCode: string;
   country: string;
-  isDefault: boolean;
+  postal_code: string;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AddressPayload {
+  full_name: string;
+  phone: string;
+  address_line_1: string;
+  address_line_2?: string;
+  city: string;
+  state: string;
+  country: string;
+  postal_code: string;
+  is_default?: boolean;
+}
+
+export interface AddressListResult {
+  addresses: Address[];
+}
+
+export interface AddressSingleResult {
+  address: Address;
 }
 
 // ──── Pagination ────
