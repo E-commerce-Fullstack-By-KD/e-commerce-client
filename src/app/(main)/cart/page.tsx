@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/store/cart-context";
 import { ROUTES } from "@/lib/constants";
 import { formatPrice, getProductPrice } from "@/lib/utils";
+import { CheckoutDrawer } from "@/components/checkout/CheckoutDrawer";
 import type { CartItem } from "@/types";
 
 /* ── Cart Row ── */
@@ -127,6 +129,7 @@ function CartSkeleton() {
 /* ── Main Page ── */
 export default function CartPage() {
   const { items, loading, total, itemCount, updateItem, removeItem } = useCart();
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   const subtotal  = total;
   const shipping  = subtotal >= 50 ? 0 : 9.99;
@@ -233,8 +236,11 @@ export default function CartPage() {
             </div>
 
             {/* Checkout */}
-            <button className="mt-6 w-full rounded-xl bg-primary-600 py-3.5 text-sm font-semibold text-white shadow-md shadow-primary-600/20 transition hover:bg-primary-700 active:scale-[.98]">
-              Proceed to Checkout
+            <button
+              onClick={() => setCheckoutOpen(true)}
+              className="mt-6 w-full rounded-xl bg-primary-600 py-3.5 text-sm font-semibold text-white shadow-md shadow-primary-600/20 transition hover:bg-primary-700 active:scale-[.98]"
+            >
+              Proceed to Checkout →
             </button>
 
             {/* Trust */}
@@ -248,6 +254,12 @@ export default function CartPage() {
           </div>
         </div>
       )}
+
+      {/* Checkout drawer */}
+      <CheckoutDrawer
+        open={checkoutOpen}
+        onClose={() => setCheckoutOpen(false)}
+      />
     </div>
   );
 }

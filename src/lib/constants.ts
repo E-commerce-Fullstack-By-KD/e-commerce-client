@@ -31,7 +31,13 @@ export const API_ENDPOINTS = {
   USER: {
     PROFILE: "/user/profile",
     UPDATE: "/user/profile",
-    ADDRESSES: "/user/addresses",
+  },
+  ADDRESS: {
+    LIST:   "/address",
+    DETAIL: (id: number | string) => `/address/${id}`,
+    CREATE: "/address",
+    UPDATE: (id: number | string) => `/address/${id}`,
+    DELETE: (id: number | string) => `/address/${id}`,
   },
   // ──── Admin ────
   ADMIN: {
