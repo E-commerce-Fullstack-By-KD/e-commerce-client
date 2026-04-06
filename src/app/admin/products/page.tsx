@@ -77,7 +77,11 @@ export default function AdminProductsPage() {
   // offer_price: empty string → null (no offer), otherwise a number
   const setOfferPrice = (e: ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
-    setField("offer_price", raw === "" ? null : Number(raw));
+    const parsed = Number(raw);
+    setField(
+      "offer_price",
+      raw === "" || !Number.isFinite(parsed) || parsed <= 0 ? null : parsed,
+    );
   };
 
   /* fetch */
@@ -159,15 +163,18 @@ export default function AdminProductsPage() {
       // Upload pending images first, then merge with existing URLs
       const uploadedUrls = await uploadPendingFiles();
       const allImageUrls = [...(form.image_url ?? []), ...uploadedUrls];
+      const normalizedListPrice = toNumber(form.list_price);
+      const normalizedOfferPrice =
+        form.offer_price != null &&
+        Number.isFinite(form.offer_price) &&
+        form.offer_price > 0 &&
+        form.offer_price < normalizedListPrice
+          ? toNumber(form.offer_price)
+          : null;
 
       const payload: CreateProductPayload = {
         ...form,
-        list_price: toNumber(form.list_price),
-        // send null explicitly to clear offer_price, or the number if set & > 0
-        offer_price:
-          form.offer_price != null && form.offer_price > 0
-            ? toNumber(form.offer_price)
-            : null,
+        list_price: normalizedListPrice,
         stock: toNumber(form.stock),
         description: form.description?.trim() || undefined,
         image_url: allImageUrls.length ? allImageUrls : undefined,
@@ -175,6 +182,14 @@ export default function AdminProductsPage() {
           ? form.collectionIds
           : undefined,
       };
+
+      // Create: omit offer_price when there is no valid offer.
+      // Update: send null when cleared so existing offer gets removed.
+      if (editProduct) {
+        payload.offer_price = normalizedOfferPrice;
+      } else if (normalizedOfferPrice != null) {
+        payload.offer_price = normalizedOfferPrice;
+      }
 
       if (editProduct) {
         await adminProductService.update(editProduct.id, payload);
