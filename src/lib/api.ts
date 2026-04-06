@@ -5,6 +5,7 @@ import axios, {
 } from "axios";
 import { config } from "@/config";
 import { STORAGE_KEYS } from "@/lib/constants";
+import { removeCookie } from "@/lib/cookie";
 
 // ──── Axios Instance ────
 const api = axios.create({
@@ -35,7 +36,9 @@ api.interceptors.response.use(
       if (typeof window !== "undefined") {
         localStorage.removeItem(STORAGE_KEYS.TOKEN);
         localStorage.removeItem(STORAGE_KEYS.USER);
-        window.location.href = "/login";
+        removeCookie(STORAGE_KEYS.TOKEN);
+        removeCookie("user_role");
+        window.location.replace("/login");
       }
     }
     return Promise.reject(error);

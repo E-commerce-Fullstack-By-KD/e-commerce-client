@@ -133,6 +133,78 @@ export interface OrderItem {
   price: number;
 }
 
+export interface OrderCreateResult {
+  order: {
+    id: number;
+    total_amount: number;
+    razorpay_order_id: string;
+    razorpay_key_id?: string;
+  };
+}
+
+export type BackendOrderStatus =
+  | "PENDING"
+  | "CONFIRMED"
+  | "SHIPPED"
+  | "DELIVERED"
+  | "CANCELLED";
+
+export interface BackendOrderItem {
+  id: number;
+  quantity: number;
+  unit_price?: number | string;
+  total_price?: number | string;
+  product?: {
+    id: number;
+    name: string;
+    image_url?: string[];
+  } | null;
+}
+
+export type BackendPaymentStatus =
+  | "PENDING"
+  | "PAID"
+  | "FAILED"
+  | "REFUNDED";
+
+export interface BackendOrder {
+  id: number;
+  total_amount: number | string;
+  status: BackendOrderStatus;
+  created_at: string;
+  items: BackendOrderItem[];
+  address?: {
+    full_name?: string;
+    phone?: string;
+    address_line_1?: string;
+    address_line_2?: string | null;
+    city?: string;
+    state?: string;
+    country?: string;
+    postal_code?: string;
+  } | null;
+  payment?: {
+    status?: BackendPaymentStatus;
+    amount?: number | string;
+    currency?: string;
+  } | null;
+}
+
+export interface OrderListResult {
+  orders: BackendOrder[];
+}
+
+export interface OrderSingleResult {
+  order: BackendOrder;
+}
+
+export interface VerifyPaymentPayload {
+  order_id: number;
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
+
 // ──── Address ────
 export interface Address {
   id: number;

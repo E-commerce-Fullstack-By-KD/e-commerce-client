@@ -28,6 +28,12 @@ export const API_ENDPOINTS = {
     DETAIL: (id: number | string) => `/orders/${id}`,
     CREATE: "/orders",
   },
+  PAYMENTS: {
+    VERIFY: "/payments/verify",
+    ORDER_CREATE: (orderId: number | string) => `/payments/orders/${orderId}/create`,
+    ORDER_DETAILS: (orderId: number | string) => `/payments/orders/${orderId}`,
+    REFUND: (orderId: number | string) => `/payments/orders/${orderId}/refund`,
+  },
   USER: {
     PROFILE: "/user/profile",
     UPDATE: "/user/profile",
