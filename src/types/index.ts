@@ -205,6 +205,13 @@ export interface VerifyPaymentPayload {
   razorpay_signature: string;
 }
 
+export interface PaymentCreateResult {
+  order_id: number;
+  razorpay_order_id: string;
+  amount: number;
+  currency: string;
+}
+
 // ──── Address ────
 export interface Address {
   id: number;

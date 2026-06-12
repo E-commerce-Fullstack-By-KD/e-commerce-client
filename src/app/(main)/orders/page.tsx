@@ -1,11 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Badge, EmptyState } from "@/components/ui";
 import { ROUTES } from "@/lib/constants";
+import { openRazorpayCheckout } from "@/lib/razorpay";
 import { formatPrice, formatDate } from "@/lib/utils";
 import { orderService } from "@/services/order.service";
+import { paymentService } from "@/services/payment.service";
+import { useToast } from "@/store/toast-context";
 import type {
   BackendOrder,
   BackendOrderStatus,
@@ -43,36 +46,31 @@ function paymentLabel(status?: BackendPaymentStatus) {
 }
 
 export default function OrdersPage() {
+  const { showToast } = useToast();
   const [orders, setOrders] = useState<BackendOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [retryingOrderId, setRetryingOrderId] = useState<number | null>(null);
+
+  const loadOrders = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const res = await orderService.getAll();
+      setOrders(res.result?.orders ?? []);
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Failed to load orders";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    let mounted = true;
-
-    const loadOrders = async () => {
-      try {
-        setLoading(true);
-        setError("");
-        const res = await orderService.getAll();
-        if (!mounted) return;
-        setOrders(res.result?.orders ?? []);
-      } catch (err: unknown) {
-        if (!mounted) return;
-        const message =
-          (err as { response?: { data?: { message?: string } } })?.response
-            ?.data?.message ?? "Failed to load orders";
-        setError(message);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
-
     void loadOrders();
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  }, [loadOrders]);
 
   const sortedOrders = useMemo(
     () =>
@@ -81,6 +79,48 @@ export default function OrdersPage() {
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
       ),
     [orders],
+  );
+
+  const handleRetryPayment = useCallback(
+    async (order: BackendOrder) => {
+      setRetryingOrderId(order.id);
+      try {
+        const paymentRes = await paymentService.createOrder(order.id);
+        const paymentOrder = paymentRes.result;
+
+        if (!paymentOrder) {
+          throw new Error("Unable to start payment");
+        }
+
+        await openRazorpayCheckout({
+          orderId: order.id,
+          razorpayOrderId: paymentOrder.razorpay_order_id,
+          amount: Number(paymentOrder.amount),
+          currency: paymentOrder.currency,
+          onSuccess: async (response) => {
+            await paymentService.verify({
+              order_id: order.id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+          },
+        });
+
+        showToast(`Payment completed for order #${order.id}`, "success");
+        await loadOrders();
+      } catch (err: unknown) {
+        const message =
+          (err as { response?: { data?: { message?: string } } })?.response?.data
+            ?.message ??
+          (err as { message?: string })?.message ??
+          "Failed to retry payment";
+        showToast(message, "error");
+      } finally {
+        setRetryingOrderId(null);
+      }
+    },
+    [loadOrders, showToast],
   );
 
   return (
@@ -132,6 +172,19 @@ export default function OrdersPage() {
                       Payment: {paymentLabel(order.payment.status)}
                     </Badge>
                   )}
+                  {order.status === "PENDING" &&
+                    order.payment?.status !== "PAID" && (
+                      <button
+                        type="button"
+                        onClick={() => void handleRetryPayment(order)}
+                        disabled={retryingOrderId === order.id}
+                        className="rounded-lg border border-primary-200 px-3 py-1.5 text-xs font-semibold text-primary-700 transition hover:border-primary-300 hover:bg-primary-50 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {retryingOrderId === order.id
+                          ? "Opening payment..."
+                          : "Retry payment"}
+                      </button>
+                    )}
                 </div>
               </div>
 
