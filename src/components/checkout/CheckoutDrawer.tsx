@@ -4,55 +4,11 @@ import { useState, useEffect, useCallback } from "react";
 import { addressService } from "@/services/address.service";
 import { orderService } from "@/services/order.service";
 import { paymentService } from "@/services/payment.service";
-import { config } from "@/config";
+import { openRazorpayCheckout } from "@/lib/razorpay";
 import { useCart } from "@/store/cart-context";
 import { useToast } from "@/store/toast-context";
 import { formatPrice, getProductPrice } from "@/lib/utils";
 import type { Address, AddressPayload } from "@/types";
-
-interface RazorpaySuccessResponse {
-  razorpay_payment_id: string;
-  razorpay_order_id: string;
-  razorpay_signature: string;
-}
-
-interface RazorpayOpenInstance {
-  open: () => void;
-  on: (event: string, handler: (response: unknown) => void) => void;
-}
-
-interface RazorpayCheckoutOptions {
-  key: string;
-  amount: number;
-  currency: string;
-  name: string;
-  description: string;
-  order_id: string;
-  handler: (response: RazorpaySuccessResponse) => void | Promise<void>;
-  modal?: {
-    ondismiss?: () => void;
-  };
-}
-
-declare global {
-  interface Window {
-    Razorpay?: new (options: RazorpayCheckoutOptions) => RazorpayOpenInstance;
-  }
-}
-
-async function loadRazorpayScript(): Promise<boolean> {
-  if (typeof window === "undefined") return false;
-  if (window.Razorpay) return true;
-
-  return new Promise((resolve) => {
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.async = true;
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
-    document.body.appendChild(script);
-  });
-}
 
 /* ─────────────────────────────────────────────
    Tiny helpers
@@ -381,10 +337,8 @@ export function CheckoutDrawer({ open, onClose }: CheckoutDrawerProps) {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [placing, setPlacing] = useState(false);
 
-  // Shipping calc
-  const subtotal = total;
-  const shipping = subtotal >= 50 ? 0 : 9.99;
-  const grandTotal = subtotal + shipping;
+  const payableTotal = total;
+  const grandTotal = payableTotal;
 
   // Lock body scroll
   useEffect(() => {
@@ -491,11 +445,6 @@ export function CheckoutDrawer({ open, onClose }: CheckoutDrawerProps) {
 
     setPlacing(true);
     try {
-      const razorpayReady = await loadRazorpayScript();
-      if (!razorpayReady || !window.Razorpay) {
-        throw new Error("Unable to load payment gateway");
-      }
-
       const cartIds = items.map((item) => item.id);
       const createOrderRes = await orderService.create(selectedId, cartIds);
       const createdOrder = createOrderRes.result?.order;
@@ -504,42 +453,19 @@ export function CheckoutDrawer({ open, onClose }: CheckoutDrawerProps) {
         throw new Error("Order creation failed");
       }
 
-      const checkoutKey = createdOrder.razorpay_key_id || config.razorpayKeyId;
-      if (!checkoutKey) {
-        throw new Error("Razorpay key is not configured");
-      }
-
-      await new Promise<void>((resolve, reject) => {
-        const razorpay = new window.Razorpay!({
-          key: checkoutKey,
-          amount: Math.round(Number(createdOrder.total_amount) * 100),
-          currency: "INR",
-          name: config.appName,
-          description: `Order #${createdOrder.id}`,
-          order_id: createdOrder.razorpay_order_id,
-          handler: async (response: RazorpaySuccessResponse) => {
-            try {
-              await paymentService.verify({
-                order_id: createdOrder.id,
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-              });
-              resolve();
-            } catch (error) {
-              reject(error);
-            }
-          },
-          modal: {
-            ondismiss: () => reject(new Error("Payment cancelled by user")),
-          },
-        });
-
-        razorpay.on("payment.failed", () => {
-          reject(new Error("Payment failed. Please try again."));
-        });
-
-        razorpay.open();
+      await openRazorpayCheckout({
+        orderId: createdOrder.id,
+        razorpayOrderId: createdOrder.razorpay_order_id,
+        amount: Number(createdOrder.total_amount),
+        key: createdOrder.razorpay_key_id,
+        onSuccess: async (response) => {
+          await paymentService.verify({
+            order_id: createdOrder.id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+          });
+        },
       });
 
       showToast("Order placed successfully! 🎉", "success");
@@ -577,7 +503,7 @@ export function CheckoutDrawer({ open, onClose }: CheckoutDrawerProps) {
             <h2 className="text-lg font-bold text-text-primary">Checkout</h2>
             <p className="text-xs text-text-muted">
               {itemCount} item{itemCount !== 1 ? "s" : ""} ·{" "}
-              {formatPrice(grandTotal)}
+              {formatPrice(payableTotal)}
             </p>
           </div>
           <button
@@ -815,25 +741,15 @@ export function CheckoutDrawer({ open, onClose }: CheckoutDrawerProps) {
               {/* Price breakdown */}
               <div className="rounded-2xl bg-surface-secondary p-4 space-y-2 text-sm">
                 <div className="flex justify-between text-text-secondary">
-                  <span>Subtotal</span>
+                  <span>Items total</span>
                   <span className="font-medium text-text-primary">
-                    {formatPrice(subtotal)}
+                    {formatPrice(payableTotal)}
                   </span>
                 </div>
-                <div className="flex justify-between text-text-secondary">
-                  <span>Shipping</span>
-                  {shipping === 0 ? (
-                    <span className="font-medium text-emerald-600">Free</span>
-                  ) : (
-                    <span className="font-medium text-text-primary">
-                      {formatPrice(shipping)}
-                    </span>
-                  )}
-                </div>
                 <div className="flex justify-between border-t border-border pt-2 font-bold text-text-primary">
-                  <span>Total</span>
+                  <span>Pay now</span>
                   <span className="text-primary-600">
-                    {formatPrice(grandTotal)}
+                    {formatPrice(payableTotal)}
                   </span>
                 </div>
               </div>
